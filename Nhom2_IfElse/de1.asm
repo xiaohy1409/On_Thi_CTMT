@@ -1,46 +1,42 @@
 .text
-.equ Switches, 0XFF200040
+.equ Switches, 0xFF200040
 .equ RedLed, 0xFF200000
 .global _start
 _start:
-li sp, 0x03FFFFFC
-    la t0, Switches
-    lw t1, 0(t0)
+    li sp, 0x03FFFFFC
+    la s0, Switches
+    lw t0, 0(s0)
+    la, s1, RedLed
 
-    srli t1, t1, 2
-    andi t1, t1, 0xF
+    srli t0, t0, 2
+    andi t0, t0, 0xF
+    mv a0, t0
     jal x1, TinhToan
-    
-    la t2, RedLed
-    andi t3, x16, 1
-    beq t3, x0, Chan
 
-    li t4, 1
-    beq t3, t4, Le 
-Chan:  
-    sw x16, 0(t2)
-    j _start
-Le: 
+# kiểm tra chẵn lẻ
+    andi t1, x16, 1
+    beq t1, x0, Chan
     slli x16, x16, 1
     addi x16, x16, 1
-    sw x16, 0(t2)
+Chan:
+    sw x16, 0(s1)
     j _start
-TinhToan:
-    addi sp, sp, -8
-    sw ra, 4(sp)
-    sw s0, 0(sp)
 
-    li s0, 0
-    li t2, 1
-LOOP:
-    blt t1, x0, DONE
-    add s0, s0, t2
-    addi t2, t2, 2
-    addi t1, t1, -1
-    j LOOP
-DONE: 
-    mv x16, s0
-    lw ra, 4(sp)
-    lw s0, 0(sp)
-    addi sp, sp, 8
+TinhToan:
+    addi sp, sp, -4
+    sw ra, 0(sp)
+
+    li t0, 0
+    li t1, 1
+
+Loop:
+    beq a0, x0, doneTinhToan
+    add t0, t0, t1
+    addi t1, t1, 2
+    addi a0, a0, -1
+    j Loop
+doneTinhToan:
+    mv x16, t0
+    lw ra, 0(sp)
+    addi sp, sp, 4
     jalr x0, 0(x1)
